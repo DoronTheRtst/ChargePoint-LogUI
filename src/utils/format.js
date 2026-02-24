@@ -1,23 +1,27 @@
+function isValidTs(ts) {
+  return Number.isFinite(ts);
+}
+
 export function fmt(ts, offset = 2) {
-  if (!ts) return '—';
+  if (!isValidTs(ts)) return '—';
   const d = new Date(ts + offset * 3600000);
   return d.toISOString().slice(0, 19).replace('T', ' ');
 }
 
 export function fmtTime(ts, offset = 2) {
-  if (!ts) return '—';
+  if (!isValidTs(ts)) return '—';
   const d = new Date(ts + offset * 3600000);
   return d.toISOString().slice(11, 19);
 }
 
 export function fmtDate(ts, offset = 2) {
-  if (!ts) return '—';
+  if (!isValidTs(ts)) return '—';
   const d = new Date(ts + offset * 3600000);
   return d.toISOString().slice(0, 10);
 }
 
 export function fmtShort(ts, offset = 2) {
-  if (!ts) return '—';
+  if (!isValidTs(ts)) return '—';
   const d = new Date(ts + offset * 3600000);
   return d.toISOString().slice(5, 16).replace('T', ' ');
 }
