@@ -47,6 +47,16 @@ function frozenEnergyRule(session) {
     }
   }
 
+
+  if (streak >= 2) {
+    anomalies.push({
+      type: 'FROZEN_ENERGY',
+      severity: 'critical',
+      message: `Energy register frozen at ${readings[readings.length - 1].energy} kWh (${streak}+ readings)`,
+      ts: streakStart,
+    });
+  }
+
   return anomalies;
 }
 

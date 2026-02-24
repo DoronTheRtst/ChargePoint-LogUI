@@ -13,7 +13,10 @@ export function extractReadings(params) {
       if (sv.measurand === 'Energy.Active.Import.Register' && sv.location === 'Outlet') r.energy = val;
       if (sv.measurand === 'Power.Active.Import' && sv.location === 'Outlet') r.power = val;
       if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L1') r.currentL1Out = val;
+      if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L2') r.currentL2Out = val;
+      if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L3') r.currentL3Out = val;
       if (sv.measurand === 'Current.Import' && sv.location === 'Body' && sv.phase === 'L1') r.currentL1Body = val;
+      if (sv.measurand === 'Voltage' && sv.phase === 'L1-N') r.voltL1 = val;
     }
 
     out.push(r);

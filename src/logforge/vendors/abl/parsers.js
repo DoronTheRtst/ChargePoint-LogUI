@@ -92,11 +92,17 @@ export function parseCpLog(text) {
     const cpM = t.match(/\[ChargePoint-(\d+)\]/);
     const connector = cpM ? parseInt(cpM[1], 10) : null;
     const stateM = t.match(/Intent=(\S+)\s+Step=(\S+)\s+Defects=(\d+)\s+StartVotes=(\d+)\s+StopVotes=(\d+)\s+Vetos=(\d+)/);
+    const meterM = t.match(/Performing meter sampling: ActiveMeterReading \[Outlet #(\d+):.*transactionId=TransactionId \[value=(\w+)\]/);
+
+    let evType = 'state_update';
+    if (meterM) evType = 'meter_sample';
+    else if (level === 'WARN') evType = 'warn';
+    else if (t.includes('checking threads')) evType = 'thread_check';
 
     const event = {
       ts,
       source: 'cp',
-      type: level === 'WARN' ? 'warn' : 'state_update',
+      type: evType,
       level,
       connector,
       raw: t,
@@ -109,6 +115,11 @@ export function parseCpLog(text) {
       event.startVotes = +stateM[4];
       event.stopVotes = +stateM[5];
       event.vetos = +stateM[6];
+    }
+
+    if (meterM) {
+      event.connector = parseInt(meterM[1], 10);
+      event.transactionId = meterM[2];
     }
 
     events.push(event);
