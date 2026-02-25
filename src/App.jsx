@@ -179,13 +179,13 @@ export default function App() {
             ))}
           </div>
 
-          <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex' }}>
             {tab === 'sessions' && (
               <>
                 <div style={{ width: 280, borderRight: `1px solid ${T.border}`, overflow: 'auto', flexShrink: 0, background: T.surface }}>
                   <SessionList sessions={sessions} selectedSession={selectedSession} onSelectSession={setSelectedSession} />
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   {selectedSession ? (
                     <SessionDetail key={selectedSession.id} session={selectedSession} sourceAliases={sourceAliases} />
                   ) : (
