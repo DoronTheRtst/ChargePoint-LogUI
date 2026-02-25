@@ -10,11 +10,18 @@ import { analyzeLogs, listVendors } from './logforge';
 import { SOURCE_LABEL, T } from './tokens';
 import { fmtDate } from './utils/format';
 
-const ICON_BY_LOGTYPE = { ocpp: '📡', user: '👤', cp: '🔩' };
+const ICON_BY_LOGTYPE = {
+  ocpp: '📡',
+  user: '👤',
+  cp: '🔩',
+  operations: '🧰',
+  guipresenter: '🖥️',
+  powermanagement: '⚡',
+};
 
 export default function App() {
   const vendors = useMemo(() => listVendors(), []);
-  const [vendorId] = useState(vendors[0]?.id || 'abl');
+  const [vendorId, setVendorId] = useState(vendors[0]?.id || 'abl');
   const vendor = useMemo(() => vendors.find((v) => v.id === vendorId) || vendors[0], [vendorId, vendors]);
   const model = vendor?.models?.[0];
 
@@ -91,6 +98,29 @@ export default function App() {
           <span style={{ fontSize: 20 }}>⚡</span>
           <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.5px', color: T.amber }}>LogForge</span>
           <Badge color={T.textMuted} style={{ fontSize: 10 }}>{vendor.label} · OCPP 1.6</Badge>
+          <select
+            value={vendorId}
+            onChange={(e) => {
+              setVendorId(e.target.value);
+              setFilesByType({});
+              setSelectedSession(null);
+            }}
+            style={{
+              background: T.bg,
+              color: T.text,
+              border: `1px solid ${T.borderLight}`,
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 12,
+              fontFamily: 'inherit',
+            }}
+          >
+            {vendors.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label} · {v.models?.[0]?.label || 'Model'}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 16, fontSize: 12, alignItems: 'center' }}>
           {isReady && (

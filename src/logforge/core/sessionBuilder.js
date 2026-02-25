@@ -28,6 +28,7 @@ export function extractReadings(params) {
 export function buildSessions(ocppEvents, userEvents, cpEvents) {
   const map = {};
   const pendingStart = {};
+  const meterEventsByTx = {};
 
   for (const ev of ocppEvents) {
     if (ev.type !== 'message') continue;
@@ -78,6 +79,12 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
 
     if (ev.dir === 'OUT' && ev.action === 'MeterValues') {
       const { transactionId } = ev.params || {};
+
+      if (transactionId != null) {
+        if (!meterEventsByTx[transactionId]) meterEventsByTx[transactionId] = [];
+        meterEventsByTx[transactionId].push(ev);
+      }
+
       const key = Object.keys(map).find((k) => map[k].transactionId === transactionId);
       if (!key) continue;
 
@@ -96,6 +103,53 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
       map[key].statusHistory.push({ ts: ev.ts, status });
       map[key].ocppEvents.push(ev);
     }
+  }
+
+
+  for (const [transactionId, meterEvents] of Object.entries(meterEventsByTx)) {
+    const existing = Object.values(map).find((s) => String(s.transactionId) === String(transactionId));
+    if (existing) continue;
+
+    const sortedMeterEvents = meterEvents.slice().sort(sortByTs);
+    const firstEv = sortedMeterEvents[0];
+    const lastEv = sortedMeterEvents[sortedMeterEvents.length - 1];
+    const connector = firstEv.params?.connectorId ?? null;
+    const meterReadings = sortedMeterEvents.flatMap((e) => extractReadings(e.params));
+    const firstReadingTs = meterReadings.filter((r) => r.ts).map((r) => r.ts).sort((a, b) => a - b)[0];
+    const lastReadingTs = meterReadings.filter((r) => r.ts).map((r) => r.ts).sort((a, b) => a - b).slice(-1)[0];
+
+    const startTs = firstReadingTs || firstEv.ts;
+    const stopTs = lastReadingTs || lastEv.ts;
+    const meterStart = meterReadings.find((r) => r.energy !== undefined)?.energy;
+    const meterStop = [...meterReadings].reverse().find((r) => r.energy !== undefined)?.energy;
+
+    const inferred = {
+      id: `${connector ?? 'x'}_${transactionId}_inferred`,
+      connector,
+      idTag: 'unknown',
+      meterStart,
+      meterStop,
+      startTs,
+      stopTs,
+      transactionId: Number.isNaN(Number(transactionId)) ? transactionId : Number(transactionId),
+      startMsgId: firstEv.msgId,
+      stopReason: 'IncompleteTelemetry',
+      status: 'incomplete',
+      meterReadings,
+      statusHistory: [],
+      ocppEvents: sortedMeterEvents,
+      userEvents: [],
+      cpEvents: [],
+      anomalies: [{
+        type: 'INCOMPLETE_TELEMETRY',
+        severity: 'info',
+        message: 'Session inferred from MeterValues without Start/Stop transaction pair',
+        ts: startTs,
+      }],
+      energyDelivered: meterStart !== undefined && meterStop !== undefined ? meterStop - meterStart : null,
+    };
+
+    map[inferred.id] = inferred;
   }
 
   const sessions = Object.values(map);

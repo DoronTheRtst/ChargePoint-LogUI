@@ -18,11 +18,28 @@ export const T = {
   ocpp: '#58a6ff',
   user: '#3fb950',
   cp: '#bc8cff',
+  operations: '#58a6ff',
+  guipresenter: '#56d364',
+  powermanagement: '#bc8cff',
 };
 
 export const SEV_COLOR = { critical: T.red, warning: T.orange, info: T.blue };
-export const SOURCE_COLOR = { ocpp: T.ocpp, user: T.user, cp: T.cp };
-export const SOURCE_LABEL = { ocpp: 'OCPP', user: 'USER', cp: 'CP' };
+export const SOURCE_COLOR = {
+  ocpp: T.ocpp,
+  user: T.user,
+  cp: T.cp,
+  operations: T.operations,
+  guipresenter: T.guipresenter,
+  powermanagement: T.powermanagement,
+};
+export const SOURCE_LABEL = {
+  ocpp: 'OCPP',
+  user: 'USER',
+  cp: 'CP',
+  operations: 'Operations',
+  guipresenter: 'GuiPresenter',
+  powermanagement: 'PowerMgmt',
+};
 
 export const ACTION_LABELS = {
   StartTransaction: '⚡ Start Tx',

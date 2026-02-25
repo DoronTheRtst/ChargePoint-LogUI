@@ -1,6 +1,7 @@
 import ablPlugin from './abl';
+import etrelPlugin from './etrel';
 
-const vendors = [ablPlugin];
+const vendors = [ablPlugin, etrelPlugin];
 
 export function listVendors() {
   return vendors;

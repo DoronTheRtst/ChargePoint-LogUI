@@ -41,7 +41,7 @@ export default function SessionDetail({ session }) {
       evs.push({
         ts: e.ts,
         source: 'cp',
-        label: `${e.intent} / ${e.step}`,
+        label: e.step ? `${e.intent} / ${e.step}` : `${e.intent}`,
         detail: e.defects > 0 ? `defects:${e.defects}` : e.vetos > 0 ? `vetos:${e.vetos}` : null,
       });
     }
