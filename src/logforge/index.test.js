@@ -63,4 +63,39 @@ describe('logforge vendor plugin architecture', () => {
     expect(session.connector).toBe(2);
     expect(session.anomalies.some((a) => a.type === 'INCOMPLETE_TELEMETRY')).toBe(true);
   });
+
+  test('keeps session energy chart scoped to the session meter range', () => {
+    const operations = [
+      '2026-02-25 00:00:49 Verb  <#70> [OcppClient] - Sent: [2,"m1","MeterValues",{"connectorId":2,"meterValue":[{"timestamp":"2026-02-25T00:00:47.738Z","sampledValue":[{"value":"100.0","measurand":"Energy.Active.Import.Register","location":"Outlet"},{"value":"0","measurand":"Power.Active.Import","location":"Outlet"}]}],"transactionId":2027882}]',
+      '2026-02-25 00:01:49 Verb  <#79> [OcppClient] - Sent: [2,"m2","MeterValues",{"connectorId":2,"meterValue":[{"timestamp":"2026-02-25T00:01:47.708Z","sampledValue":[{"value":"100.2","measurand":"Energy.Active.Import.Register","location":"Outlet"},{"value":"0","measurand":"Power.Active.Import","location":"Outlet"}]}],"transactionId":2027882}]',
+      '2026-02-25 00:01:49 Verb  <#79> [OcppClient] - Received: [3,"m2",{}]',
+    ].join('\n');
+
+    const powermanagement = [
+      '2026-02-25 00:01:00 Verb  <#29> [Scheduler] - Instant update result:',
+      'Connectors:',
+      '  22030428/2',
+      '    State:           Charging {Charging}',
+      '    Target:          16 A  Last: 16 A',
+      '    Current:         (10, 10, 10) A',
+      '    Power:           (2, 2, 2: 6) kW',
+      '    Consumption:     (0, 0, 0: 500.0) kWh',
+    ].join('\n');
+
+    const result = analyzeLogs({
+      vendorId: 'etrel',
+      filesByType: {
+        operations: [operations],
+        guipresenter: [],
+        powermanagement: [powermanagement],
+      },
+    });
+
+    expect(result.sessions).toHaveLength(1);
+    const session = result.sessions[0];
+    const energies = session.meterReadings.filter((r) => r.energy !== undefined).map((r) => r.energy);
+    expect(energies).toContain(100.0);
+    expect(energies).toContain(100.2);
+    expect(energies).not.toContain(500.0);
+  });
 });
