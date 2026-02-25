@@ -1,8 +1,9 @@
 import { SEV_COLOR, SOURCE_COLOR, SOURCE_LABEL, T } from '../tokens';
 
-export function Badge({ children, color = T.textDim, bg, style }) {
+export function Badge({ children, color = T.textDim, bg, style, ...rest }) {
   return (
     <span
+      {...rest}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
