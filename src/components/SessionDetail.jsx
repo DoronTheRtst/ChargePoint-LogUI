@@ -62,7 +62,7 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }} className="fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }} className="fade-in">
       <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <ConnectorBadge connector={session.connector} />
@@ -140,7 +140,7 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
         ))}
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '16px 20px' }}>
         {tab === 'overview' && <MeterChart readings={session.meterReadings} />}
         {tab === 'events' && (
           <div>

@@ -32,7 +32,7 @@ export default function App() {
   const logTypes = model?.logTypes || [];
   const sourceAliases = useMemo(() => {
     if (vendor.id === 'etrel') {
-      return { ocpp: 'Operations', user: 'GuiPresenter', cp: 'PowerManagement' };
+      return { ocpp: 'Operations', user: 'GuiPresenter', cp: 'PowerMgmt' };
     }
     return { ocpp: 'OCPP', user: 'USER', cp: 'CP' };
   }, [vendor.id]);
