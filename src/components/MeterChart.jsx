@@ -3,6 +3,23 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { T } from '../tokens';
 import { fmtTime } from '../utils/format';
 
+export function getEnergyYAxisDomain(readings) {
+  const energies = readings.filter((r) => r.energy !== undefined).map((r) => r.energy);
+  if (energies.length === 0) return ['auto', 'auto'];
+
+  const min = Math.min(...energies);
+  const max = Math.max(...energies);
+  const range = max - min;
+
+  if (range === 0) {
+    const pad = Math.max(0.2, Math.abs(min) * 0.01);
+    return [min - pad, max + pad];
+  }
+
+  const pad = Math.max(0.05, range * 0.15);
+  return [min - pad, max + pad];
+}
+
 export default function MeterChart({ readings }) {
   const data = useMemo(
     () =>
@@ -20,6 +37,8 @@ export default function MeterChart({ readings }) {
   );
 
   if (data.length === 0) return <div style={{ color: T.textMuted, fontSize: 13, padding: 20 }}>No meter readings</div>;
+
+  const energyYAxisDomain = getEnergyYAxisDomain(readings);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
@@ -54,7 +73,12 @@ export default function MeterChart({ readings }) {
           <LineChart data={data} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
             <XAxis dataKey="t" tick={{ fill: T.textMuted, fontSize: 10, fontFamily: 'IBM Plex Mono' }} interval="preserveStartEnd" />
-            <YAxis tick={{ fill: T.textMuted, fontSize: 10, fontFamily: 'IBM Plex Mono' }} width={60} />
+            <YAxis
+              domain={energyYAxisDomain}
+              allowDataOverflow
+              tick={{ fill: T.textMuted, fontSize: 10, fontFamily: 'IBM Plex Mono' }}
+              width={60}
+            />
             <Tooltip content={<CustomTooltip />} />
             <Line type="monotone" dataKey="energy" stroke={T.amber} strokeWidth={2} dot={false} name="kWh" />
           </LineChart>
