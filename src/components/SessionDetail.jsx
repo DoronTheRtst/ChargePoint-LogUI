@@ -62,7 +62,7 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }} className="fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }} className="fade-in">
       <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <ConnectorBadge connector={session.connector} />
@@ -122,13 +122,15 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
 
       {session.anomalies.length > 0 && (
         <div style={{ padding: '8px 20px', background: `${T.red}08`, borderBottom: `1px solid ${T.red}22`, flexShrink: 0 }}>
-          {session.anomalies.map((a, i) => (
-            <div key={`${a.type}_${a.ts}_${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: i < session.anomalies.length - 1 ? 4 : 0 }}>
-              <SeverityIcon severity={a.severity} />
-              <span style={{ color: SEV_COLOR[a.severity] || T.textDim }}>{a.message}</span>
-              {a.ts && <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmtTime(a.ts)}</span>}
-            </div>
-          ))}
+          <div style={{ maxHeight: 180, overflow: 'auto', paddingRight: 4 }}>
+            {session.anomalies.map((a, i) => (
+              <div key={`${a.type}_${a.ts}_${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: i < session.anomalies.length - 1 ? 4 : 0 }}>
+                <SeverityIcon severity={a.severity} />
+                <span style={{ color: SEV_COLOR[a.severity] || T.textDim }}>{a.message}</span>
+                {a.ts && <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmtTime(a.ts)}</span>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -140,7 +142,7 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
         ))}
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '16px 20px' }}>
         {tab === 'overview' && <MeterChart readings={session.meterReadings} />}
         {tab === 'events' && (
           <div>
