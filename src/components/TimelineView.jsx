@@ -147,11 +147,11 @@ export default function TimelineView({ ocppEvents, userEvents, cpEvents, sourceA
       <div style={{ flex: 1, overflow: 'auto' }}>
         {events.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: T.textMuted, fontSize: 13 }}>No events in selected timeframe. Try widening the range.</div>}
         {events.slice(0, 2000).map((ev, i) => (
-          <div key={`${ev.source}_${ev.ts}_${i}`} style={{ display: 'grid', gridTemplateColumns: '130px 52px 60px 1fr', gap: 10, padding: '4px 20px', borderBottom: `1px solid ${T.border}18`, fontSize: 12, alignItems: 'center', background: i % 2 === 0 ? 'transparent' : `${T.surface}80` }}>
+          <div key={`${ev.source}_${ev.ts}_${i}`} style={{ display: 'grid', gridTemplateColumns: '130px 52px 86px minmax(0, 1fr)', gap: 10, padding: '4px 20px', borderBottom: `1px solid ${T.border}18`, fontSize: 12, alignItems: 'center', background: i % 2 === 0 ? 'transparent' : `${T.surface}80` }}>
             <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmt(ev.ts)}</span>
             {ev.connector ? <ConnectorBadge connector={ev.connector} /> : <span />}
-            <Badge color={SOURCE_COLOR[ev.source]}>{sourceAliases[ev.source] || SOURCE_LABEL[ev.source]}</Badge>
-            <span style={{ color: T.text }}>
+            <Badge color={SOURCE_COLOR[ev.source]} style={{ maxWidth: 82, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={sourceAliases[ev.source] || SOURCE_LABEL[ev.source]}>{sourceAliases[ev.source] || SOURCE_LABEL[ev.source]}</Badge>
+            <span style={{ color: T.text, minWidth: 0, overflowWrap: 'anywhere' }}>
               {ev.label}
               {ev.detail && (
                 <span style={{ color: T.textDim, marginLeft: 8, fontSize: 11 }} className="mono">
