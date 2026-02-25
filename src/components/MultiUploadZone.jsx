@@ -89,7 +89,7 @@ export default function MultiUploadZone({ label, source, icon, files, onAddFiles
         {!loaded && <span style={{ fontSize: 11, color: T.textMuted }}>Drop files or click · multi-select OK</span>}
       </div>
       {loaded && (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxHeight: 86, overflow: 'auto', paddingRight: 4 }}>
           {files.map((f) => (
             <FileChip key={f.id} name={f.name} lineCount={f.lineCount} color={color} onRemove={() => onRemoveFile(f.id)} />
           ))}

@@ -6,6 +6,21 @@ describe('etrel parsers', () => {
     const operations = [
       '2026-02-25 00:00:49 Verb  <#70> [OcppClient] - Sent: [2,"19d3","MeterValues",{"connectorId":2,"meterValue":[{"timestamp":"2026-02-25T00:00:47.738Z","sampledValue":[{"value":"35855.8","measurand":"Energy.Active.Import.Register","location":"Outlet"}]}],"transactionId":2027725}]',
       '2026-02-25 00:00:49 Verb  <#67> [OcppClient] - Received: [3,"19d3",{}]',
+      '2026-02-25 00:00:20 Verb  <EVT> [Evse 1] - Created ConnectorStatusData: {',
+      '  "ConnectorId": 1,',
+      '  "Status": "Charging",',
+      '  "Current": {',
+      '    "L1": 15.581,',
+      '    "L2": 15.161,',
+      '    "L3": 14.954',
+      '  },',
+      '  "Power": {',
+      '    "Total": 10.8543',
+      '  },',
+      '  "CurrentSession": {',
+      '    "ConsumedEnergy": 29.5',
+      '  }',
+      '}',
       '2026-02-25 00:00:48 Error <#67> [EnergyMeterService evse2] - SendMeasurements - Temperature: could not read value (AfeSystemFault)',
     ].join('\n');
 
@@ -17,6 +32,7 @@ describe('etrel parsers', () => {
     expect(parsed.ocppEvents[1].dir).toBe('IN');
     expect(parsed.userEvents).toHaveLength(1);
     expect(parsed.userEvents[0].connector).toBe(2);
+    expect(parsed.cpEvents.some((e) => e.type === 'meter_sample')).toBe(true);
   });
 
   test('parses GuiPresenter Duo states as user events', () => {

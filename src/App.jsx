@@ -30,6 +30,13 @@ export default function App() {
   const [selectedSession, setSelectedSession] = useState(null);
 
   const logTypes = model?.logTypes || [];
+  const sourceAliases = useMemo(() => {
+    if (vendor.id === 'etrel') {
+      return { ocpp: 'Operations', user: 'GuiPresenter', cp: 'PowerManagement' };
+    }
+    return { ocpp: 'OCPP', user: 'USER', cp: 'CP' };
+  }, [vendor.id]);
+
 
   const analysis = useMemo(() => {
     const textByType = Object.fromEntries(Object.entries(filesByType).map(([k, files]) => [k, files.map((f) => f.text)]));
@@ -137,7 +144,7 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0, maxHeight: 210, overflow: 'auto' }}>
         <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
           {logTypes.map((logType) => (
             <MultiUploadZone
@@ -158,7 +165,7 @@ export default function App() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, color: T.textMuted }}>
           <span style={{ fontSize: 48 }}>⚡</span>
           <div style={{ fontSize: 16, color: T.textDim }}>Upload log files to begin analysis</div>
-          <div style={{ fontSize: 13 }}>Supports OCPP 1.6 WS logs · ABL USER events · ChargePoint state logs</div>
+          <div style={{ fontSize: 13 }}>Supports vendor-specific OCPP/USER/CP-equivalent logs</div>
           <div style={{ fontSize: 12, color: T.textMuted }}>Multi-file upload supported — drop multiple days at once</div>
         </div>
       ) : (
@@ -180,7 +187,7 @@ export default function App() {
                 </div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   {selectedSession ? (
-                    <SessionDetail key={selectedSession.id} session={selectedSession} />
+                    <SessionDetail key={selectedSession.id} session={selectedSession} sourceAliases={sourceAliases} />
                   ) : (
                     <div style={{ padding: 40, color: T.textMuted, fontSize: 13, textAlign: 'center', marginTop: 60 }}>Select a session to inspect</div>
                   )}
@@ -189,7 +196,7 @@ export default function App() {
             )}
             {tab === 'timeline' && (
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <TimelineView ocppEvents={ocppEvents} userEvents={userEvents} cpEvents={cpEvents} />
+                <TimelineView ocppEvents={ocppEvents} userEvents={userEvents} cpEvents={cpEvents} sourceAliases={sourceAliases} />
               </div>
             )}
             {tab === 'anomalies' && (

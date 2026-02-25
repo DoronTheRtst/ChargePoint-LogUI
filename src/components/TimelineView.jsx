@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SOURCE_COLOR, SOURCE_LABEL, T } from '../tokens';
 import { fmt, fmtDate } from '../utils/format';
-import { ConnectorBadge, SourceBadge } from './Badge';
+import { Badge, ConnectorBadge } from './Badge';
 import TimelineBrush from './TimelineBrush';
 
-export default function TimelineView({ ocppEvents, userEvents, cpEvents }) {
+export default function TimelineView({ ocppEvents, userEvents, cpEvents, sourceAliases = {} }) {
   const [filterSource, setFilterSource] = useState(['ocpp', 'user', 'cp']);
   const [filterConnector, setFilterConnector] = useState('all');
-  const [rangeInit, setRangeInit] = useState(false);
   const [rangeStart, setRangeStart] = useState(0);
   const [rangeEnd, setRangeEnd] = useState(Infinity);
 
@@ -29,21 +28,15 @@ export default function TimelineView({ ocppEvents, userEvents, cpEvents }) {
   }, [cpEvents, ocppEvents, userEvents]);
 
   const timeMin = allEventsRaw[0] || 0;
-  const timeMax = allEventsRaw[allEventsRaw.length - 1] || 1;
+  const rawTimeMax = allEventsRaw[allEventsRaw.length - 1] || 1;
+  const timeMax = rawTimeMax <= timeMin ? timeMin + 60000 : rawTimeMax;
 
   useEffect(() => {
-    if (!rangeInit && allEventsRaw.length > 0) {
-      if (allEventsRaw.length <= 500) {
-        setRangeStart(timeMin);
-        setRangeEnd(timeMax);
-      } else {
-        const idx = Math.min(500, allEventsRaw.length - 1);
-        setRangeStart(timeMin);
-        setRangeEnd(allEventsRaw[idx]);
-      }
-      setRangeInit(true);
+    if (allEventsRaw.length > 0) {
+      setRangeStart(timeMin);
+      setRangeEnd(timeMax);
     }
-  }, [allEventsRaw, rangeInit, timeMax, timeMin]);
+  }, [allEventsRaw.length, timeMax, timeMin]);
 
   const buckets = useMemo(() => {
     const N = 120;
@@ -83,19 +76,27 @@ export default function TimelineView({ ocppEvents, userEvents, cpEvents }) {
       if (e.ts < rangeStart || e.ts > rangeEnd) continue;
       if (!filterSource.includes('cp')) continue;
       if (filterConnector !== 'all' && e.connector !== parseInt(filterConnector, 10)) continue;
-      if (e.type === 'state_update' && e.intent) all.push({ ts: e.ts, source: 'cp', connector: e.connector, label: `${e.intent}`, detail: `vetos:${e.vetos} def:${e.defects}` });
-      else if (e.type === 'meter_sample' || e.type === 'warn') all.push({ ts: e.ts, source: 'cp', connector: e.connector, label: e.type, detail: e.transactionId });
+      if (e.type === 'state_update' && e.intent) {
+        const detail = e.vetos !== undefined || e.defects !== undefined
+          ? `vetos:${e.vetos ?? 0} def:${e.defects ?? 0}`
+          : e.state || null;
+        all.push({ ts: e.ts, source: 'cp', connector: e.connector, label: `${e.intent}`, detail });
+      } else if (e.type === 'meter_sample' || e.type === 'warn' || e.type === 'error') {
+        const detail = e.transactionId || (e.energy !== undefined ? `${e.energy} kWh` : null);
+        all.push({ ts: e.ts, source: 'cp', connector: e.connector, label: e.type, detail });
+      }
     }
     return all.sort((a, b) => a.ts - b.ts);
   }, [cpEvents, filterConnector, filterSource, ocppEvents, rangeEnd, rangeStart, userEvents]);
 
   const inRangeCount = events.length;
-  const dateRange = allEventsRaw.length > 0 ? `${fmtDate(timeMin)} → ${fmtDate(timeMax)}` : '';
+  const dateRange = allEventsRaw.length > 0 ? `${fmtDate(timeMin)} → ${fmtDate(rawTimeMax)}` : '';
+  const sourceKeys = ['ocpp', 'user', 'cp'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ padding: '10px 20px', borderBottom: `1px solid ${T.border}`, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 }}>
-        {['ocpp', 'user', 'cp'].map((s) => (
+        {sourceKeys.map((s) => (
           <button
             key={s}
             onClick={() => setFilterSource((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))}
@@ -111,7 +112,7 @@ export default function TimelineView({ ocppEvents, userEvents, cpEvents }) {
               fontWeight: 600,
             }}
           >
-            {SOURCE_LABEL[s]}
+            {sourceAliases[s] || SOURCE_LABEL[s]}
           </button>
         ))}
         <select value={filterConnector} onChange={(e) => setFilterConnector(e.target.value)} style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, padding: '3px 10px', borderRadius: 5, fontSize: 12, fontFamily: 'inherit' }}>
@@ -149,7 +150,7 @@ export default function TimelineView({ ocppEvents, userEvents, cpEvents }) {
           <div key={`${ev.source}_${ev.ts}_${i}`} style={{ display: 'grid', gridTemplateColumns: '130px 52px 60px 1fr', gap: 10, padding: '4px 20px', borderBottom: `1px solid ${T.border}18`, fontSize: 12, alignItems: 'center', background: i % 2 === 0 ? 'transparent' : `${T.surface}80` }}>
             <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmt(ev.ts)}</span>
             {ev.connector ? <ConnectorBadge connector={ev.connector} /> : <span />}
-            <SourceBadge source={ev.source} />
+            <Badge color={SOURCE_COLOR[ev.source]}>{sourceAliases[ev.source] || SOURCE_LABEL[ev.source]}</Badge>
             <span style={{ color: T.text }}>
               {ev.label}
               {ev.detail && (

@@ -10,11 +10,12 @@ export function extractReadings(params) {
 
     for (const sv of mv.sampledValue || []) {
       const val = parseFloat(sv.value);
-      if (sv.measurand === 'Energy.Active.Import.Register' && sv.location === 'Outlet') r.energy = val;
-      if (sv.measurand === 'Power.Active.Import' && sv.location === 'Outlet') r.power = val;
-      if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L1') r.currentL1Out = val;
-      if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L2') r.currentL2Out = val;
-      if (sv.measurand === 'Current.Import' && sv.location === 'Outlet' && sv.phase === 'L3') r.currentL3Out = val;
+      const isOutlet = !sv.location || sv.location === 'Outlet';
+      if (sv.measurand === 'Energy.Active.Import.Register' && isOutlet) r.energy = val;
+      if (sv.measurand === 'Power.Active.Import' && isOutlet) r.power = sv.unit === 'kW' ? val * 1000 : val;
+      if (sv.measurand === 'Current.Import' && isOutlet && sv.phase === 'L1') r.currentL1Out = val;
+      if (sv.measurand === 'Current.Import' && isOutlet && sv.phase === 'L2') r.currentL2Out = val;
+      if (sv.measurand === 'Current.Import' && isOutlet && sv.phase === 'L3') r.currentL3Out = val;
       if (sv.measurand === 'Current.Import' && sv.location === 'Body' && sv.phase === 'L1') r.currentL1Body = val;
       if (sv.measurand === 'Voltage' && sv.phase === 'L1-N') r.voltL1 = val;
     }
@@ -168,6 +169,36 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
       (s) => s.connector === ev.connector && ev.ts >= s.startTs - 120000 && ev.ts <= (s.stopTs || Infinity) + 120000,
     );
     if (sess) sess.cpEvents.push(ev);
+  }
+
+  for (const s of sessions) {
+    const cpReadings = s.cpEvents
+      .filter((e) => e.type === 'meter_sample' && e.energy !== undefined)
+      .map((e) => ({
+        ts: e.ts,
+        energy: e.energy,
+        power: e.power,
+        currentL1Out: e.currentL1,
+        currentL2Out: e.currentL2,
+        currentL3Out: e.currentL3,
+      }));
+
+    if (cpReadings.length > 0) {
+      const merged = [...s.meterReadings, ...cpReadings].sort(sortByTs);
+      const deduped = [];
+      for (const r of merged) {
+        const prev = deduped[deduped.length - 1];
+        if (prev && prev.ts === r.ts && prev.energy === r.energy && prev.power === r.power) continue;
+        deduped.push(r);
+      }
+      s.meterReadings = deduped;
+
+      if (s.meterStart == null) s.meterStart = deduped.find((r) => r.energy !== undefined)?.energy;
+      if (s.meterStop == null) s.meterStop = [...deduped].reverse().find((r) => r.energy !== undefined)?.energy;
+      if (s.energyDelivered == null && s.meterStart != null && s.meterStop != null) {
+        s.energyDelivered = s.meterStop - s.meterStart;
+      }
+    }
   }
 
   return sessions.sort(sortByTs);

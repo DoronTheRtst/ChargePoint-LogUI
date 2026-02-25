@@ -58,12 +58,25 @@ function extractConnectorFromText(text) {
   return m ? parseInt(m[1], 10) : null;
 }
 
+function parseConnectorDataBlock(lines) {
+  if (!lines?.length) return null;
+
+  const payload = lines.join('\n');
+  try {
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}
+
 export function parseOperationsLog(text) {
   const ocppEvents = [];
   const userEvents = [];
+  const cpEvents = [];
+  const lines = text.split('\n');
 
-  for (const line of text.split('\n')) {
-    const t = line.trim();
+  for (let i = 0; i < lines.length; i += 1) {
+    const t = (lines[i] || '').trimEnd();
     if (!t) continue;
 
     const lineM = t.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(\w+)\s+<[^>]+>\s+\[([^\]]+)\] - (.+)$/);
@@ -83,6 +96,60 @@ export function parseOperationsLog(text) {
       continue;
     }
 
+    if (component.startsWith('Evse ') && (message.startsWith('Created ConnectorStatusData: {') || message.startsWith('Created ConnectorShortStatusData: {'))) {
+      const jsonLines = ['{'];
+      let depth = 1;
+      let j = i + 1;
+      for (; j < lines.length; j += 1) {
+        const s = lines[j] || '';
+        jsonLines.push(s);
+        depth += (s.match(/\{/g) || []).length;
+        depth -= (s.match(/\}/g) || []).length;
+        if (depth <= 0) break;
+      }
+
+      const parsed = parseConnectorDataBlock(jsonLines);
+      if (parsed) {
+        const connector = parsed.ConnectorId ?? extractConnectorFromText(component);
+        const state = parsed.Status;
+        const intent = state || null;
+        const totalPower = parsed.Power?.Total;
+        const totalEnergy = parsed.CurrentSession?.ConsumedEnergy ?? parsed.Consumption?.Total;
+
+        cpEvents.push({
+          ts,
+          source: 'cp',
+          type: 'state_update',
+          connector,
+          intent,
+          state,
+          targetA: parsed.CurrentSetpoint ?? parsed.LocalTarget,
+          currentL1: parsed.Current?.L1,
+          currentL2: parsed.Current?.L2,
+          currentL3: parsed.Current?.L3,
+          raw: t,
+        });
+
+        if (totalEnergy !== undefined || totalPower !== undefined) {
+          cpEvents.push({
+            ts,
+            source: 'cp',
+            type: 'meter_sample',
+            connector,
+            energy: totalEnergy,
+            power: totalPower !== undefined ? totalPower * 1000 : undefined,
+            currentL1: parsed.Current?.L1,
+            currentL2: parsed.Current?.L2,
+            currentL3: parsed.Current?.L3,
+            raw: t,
+          });
+        }
+      }
+
+      i = j;
+      continue;
+    }
+
     if (level === 'Error' || level === 'Warn') {
       userEvents.push({
         ts,
@@ -96,7 +163,11 @@ export function parseOperationsLog(text) {
     }
   }
 
-  return { ocppEvents: ocppEvents.sort(sortByTs), userEvents: userEvents.sort(sortByTs) };
+  return {
+    ocppEvents: ocppEvents.sort(sortByTs),
+    userEvents: userEvents.sort(sortByTs),
+    cpEvents: cpEvents.sort(sortByTs),
+  };
 }
 
 export function parseGuiPresenterLog(text) {
@@ -150,6 +221,21 @@ function parsePowerManagementBlock(lines, ts) {
       currentL3: current.currentL3,
       raw: current.raw.join(' | '),
     });
+
+    if (current.energy !== undefined || current.power !== undefined) {
+      events.push({
+        ts,
+        source: 'cp',
+        type: 'meter_sample',
+        connector: current.connector,
+        energy: current.energy,
+        power: current.power,
+        currentL1: current.currentL1,
+        currentL2: current.currentL2,
+        currentL3: current.currentL3,
+        raw: current.raw.join(' | '),
+      });
+    }
   };
 
   for (const line of lines) {
@@ -182,6 +268,16 @@ function parsePowerManagementBlock(lines, ts) {
       current.currentL1 = parseFloat(currentM[1]);
       current.currentL2 = parseFloat(currentM[2]);
       current.currentL3 = parseFloat(currentM[3]);
+    }
+
+    const powerM = line.match(/Power:\s+\(([0-9.-]+),\s*([0-9.-]+),\s*([0-9.-]+):\s*([0-9.-]+)\)\s*kW/);
+    if (powerM) {
+      current.power = parseFloat(powerM[4]) * 1000;
+    }
+
+    const energyM = line.match(/Consumption:\s+\(([0-9.-]+),\s*([0-9.-]+),\s*([0-9.-]+):\s*([0-9.-]+)\)\s*kWh/);
+    if (energyM) {
+      current.energy = parseFloat(energyM[4]);
     }
   }
 
@@ -240,13 +336,13 @@ export function parseLogsByType(filesByType) {
   const guiRaw = (filesByType.guipresenter || []).join('\n');
   const powerRaw = (filesByType.powermanagement || []).join('\n');
 
-  const operations = operationsRaw ? parseOperationsLog(operationsRaw) : { ocppEvents: [], userEvents: [] };
+  const operations = operationsRaw ? parseOperationsLog(operationsRaw) : { ocppEvents: [], userEvents: [], cpEvents: [] };
   const guiEvents = guiRaw ? parseGuiPresenterLog(guiRaw) : [];
   const powerEvents = powerRaw ? parsePowerManagementLog(powerRaw) : [];
 
   return {
     ocppEvents: operations.ocppEvents,
     userEvents: [...operations.userEvents, ...guiEvents].sort(sortByTs),
-    cpEvents: powerEvents,
+    cpEvents: [...operations.cpEvents, ...powerEvents].sort(sortByTs),
   };
 }
