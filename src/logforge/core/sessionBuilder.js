@@ -155,6 +155,18 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
 
   const sessions = Object.values(map);
 
+  const normalizeTx = (tx) => {
+    if (tx == null) return null;
+    const asNumber = Number(tx);
+    return Number.isNaN(asNumber) ? String(tx) : asNumber;
+  };
+
+  const findSessionByTransaction = (transactionId) => {
+    const normalized = normalizeTx(transactionId);
+    if (normalized == null) return null;
+    return sessions.find((s) => normalizeTx(s.transactionId) === normalized) || null;
+  };
+
   for (const ev of userEvents) {
     const sess = sessions.find(
       (s) => s.connector === ev.connector && ev.ts >= s.startTs - 60000 && ev.ts <= (s.stopTs || Infinity) + 60000,
@@ -163,6 +175,13 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
   }
 
   for (const ev of cpEvents) {
+    const txSession = findSessionByTransaction(ev.transactionId);
+    if (txSession) {
+      txSession.cpEvents.push(ev);
+      continue;
+    }
+
+    if (ev.transactionId != null) continue;
     if (!ev.connector) continue;
 
     const sess = sessions.find(
@@ -172,7 +191,7 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
   }
 
   for (const s of sessions) {
-    const cpReadings = s.cpEvents
+    const cpReadingsRaw = s.cpEvents
       .filter((e) => e.type === 'meter_sample' && e.energy !== undefined)
       .map((e) => ({
         ts: e.ts,
@@ -182,6 +201,14 @@ export function buildSessions(ocppEvents, userEvents, cpEvents) {
         currentL2Out: e.currentL2,
         currentL3Out: e.currentL3,
       }));
+
+    const sessionEnergies = s.meterReadings.filter((r) => r.energy !== undefined).map((r) => r.energy);
+    const minSessionEnergy = sessionEnergies.length > 0 ? Math.min(...sessionEnergies) : null;
+    const maxSessionEnergy = sessionEnergies.length > 0 ? Math.max(...sessionEnergies) : null;
+    const cpReadings = cpReadingsRaw.filter((r) => {
+      if (minSessionEnergy == null || maxSessionEnergy == null) return true;
+      return r.energy >= minSessionEnergy - 2 && r.energy <= maxSessionEnergy + 2;
+    });
 
     if (cpReadings.length > 0) {
       const merged = [...s.meterReadings, ...cpReadings].sort(sortByTs);
