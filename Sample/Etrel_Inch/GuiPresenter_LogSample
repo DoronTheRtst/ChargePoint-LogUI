@@ -1,0 +1,70 @@
+2026-02-25 01:54:02 Loggr <#58> [FileLogWriter] - Completed OpenFile. forceNew: True, reason: Date changed since last Write. LogLevel: Verbose
+2026-02-25 01:54:02 Verb  <#58> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 01:54:02 Verb  <LayerMgr> [ScreenController] - Deactivating ScreenSaverController
+2026-02-25 01:54:02 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 01:56:02 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 01:56:02 Verb  <LayerMgr> [ScreenController] - Activating ScreenSaverController
+2026-02-25 03:50:44 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 03:50:44 Verb  <LayerMgr> [ScreenController] - Deactivating ScreenSaverController
+2026-02-25 03:50:44 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 03:50:44 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 03:50:49 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 03:50:49 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 03:52:44 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 03:52:44 Verb  <LayerMgr> [ScreenController] - Activating ScreenSaverController
+2026-02-25 04:51:11 Verb  <#53> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 04:51:11 Verb  <#47> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 04:51:12 Verb  <LayerMgr> [ScreenController] - Deactivating ScreenSaverController
+2026-02-25 04:51:12 Verb  <LayerMgr> [ScreenController] - Activating Duo_FinishedPlugged
+2026-02-25 04:51:12 Warn  <LayerMgr> [LayerManager] - Received TimerElapsedEvent for screen controller Operations:ScreenSaverController that is currently inactive.
+2026-02-25 04:52:35 Verb  <#47> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 04:52:49 Verb  <#45> [CommHandler] - Duo_FinishedUnplugged @ MainWindow
+2026-02-25 04:52:50 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_FinishedPlugged
+2026-02-25 04:52:50 Verb  <LayerMgr> [ScreenController] - Activating Duo_FinishedUnplugged
+2026-02-25 04:54:50 Verb  <LayerMgr> [CommHandler] - Notify Operations: Etrel.Charging.Gui.Common.GuiTriggerEvent
+2026-02-25 04:54:50 Verb  <#47> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 04:54:50 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_FinishedUnplugged
+2026-02-25 04:54:50 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 04:56:50 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 04:56:50 Verb  <LayerMgr> [ScreenController] - Activating ScreenSaverController
+2026-02-25 05:15:05 Verb  <#45> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 05:15:05 Verb  <#45> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 05:15:05 Verb  <LayerMgr> [ScreenController] - Deactivating ScreenSaverController
+2026-02-25 05:15:05 Verb  <LayerMgr> [ScreenController] - Activating Duo_FinishedPlugged
+2026-02-25 05:15:07 Verb  <#49> [CommHandler] - Duo_FinishedPlugged @ MainWindow
+2026-02-25 05:15:07 Verb  <#45> [CommHandler] - Duo_FinishedUnplugged @ MainWindow
+2026-02-25 05:15:08 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_FinishedPlugged
+2026-02-25 05:15:08 Verb  <LayerMgr> [ScreenController] - Activating Duo_FinishedUnplugged
+2026-02-25 05:17:08 Verb  <LayerMgr> [CommHandler] - Notify Operations: Etrel.Charging.Gui.Common.GuiTriggerEvent
+2026-02-25 05:17:08 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 05:17:08 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_FinishedUnplugged
+2026-02-25 05:17:08 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 05:19:08 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 05:19:08 Verb  <LayerMgr> [ScreenController] - Activating ScreenSaverController
+2026-02-25 07:31:17 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 07:31:17 Verb  <LayerMgr> [ScreenController] - Deactivating ScreenSaverController
+2026-02-25 07:31:17 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 07:31:17 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 07:31:17 Verb  <LayerMgr> [ScreenController] - Activating Duo_Login
+2026-02-25 07:31:26 Verb  <#47> [CommHandler] - Duo_ConnectVehicle @ MainWindow
+2026-02-25 07:31:26 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Login
+2026-02-25 07:31:26 Verb  <LayerMgr> [ScreenController] - Activating Duo_ConnectVehicle
+2026-02-25 07:31:26 Verb  <#47> [CommHandler] - Duo_ConnectVehicle @ MainWindow
+2026-02-25 07:31:26 Verb  <#45> [CommHandler] - Duo_WaitingVehicle @ MainWindow
+2026-02-25 07:31:26 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_ConnectVehicle
+2026-02-25 07:31:26 Verb  <LayerMgr> [ScreenController] - Activating Duo_WaitingVehicle
+2026-02-25 07:31:28 Verb  <#45> [CommHandler] - Duo_ChargingStarted @ MainWindow
+2026-02-25 07:31:28 Warn  <LayerMgr> [CommercialRepository] - Missing `state/etrel/Commercials.json'
+2026-02-25 07:31:28 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_WaitingVehicle
+2026-02-25 07:31:28 Verb  <LayerMgr> [ScreenController] - Activating Duo_ChargingStarted
+2026-02-25 07:31:28 Verb  <#42> [CommHandler] - Duo_ChargingStarted @ MainWindow
+2026-02-25 07:31:32 Verb  <LayerMgr> [CommHandler] - Notify Operations: Etrel.Charging.Gui.Common.GuiTriggerEvent
+2026-02-25 07:31:32 Verb  <#47> [CommHandler] - Duo_ConnectorStatusOnStart @ MainWindow
+2026-02-25 07:31:32 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_ChargingStarted
+2026-02-25 07:31:32 Verb  <LayerMgr> [ScreenController] - Activating Duo_ConnectorStatusOnStart
+2026-02-25 07:31:42 Verb  <LayerMgr> [CommHandler] - Notify Operations: Etrel.Charging.Gui.Common.GuiTriggerEvent
+2026-02-25 07:31:42 Verb  <#45> [CommHandler] - Duo_Status @ MainWindow
+2026-02-25 07:31:42 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_ConnectorStatusOnStart
+2026-02-25 07:31:42 Verb  <LayerMgr> [ScreenController] - Activating Duo_Status
+2026-02-25 07:33:42 Verb  <LayerMgr> [ScreenController] - Deactivating Duo_Status
+2026-02-25 07:33:42 Verb  <LayerMgr> [ScreenController] - Activating ScreenSaverController
