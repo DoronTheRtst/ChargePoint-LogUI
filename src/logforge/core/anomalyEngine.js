@@ -11,7 +11,7 @@ export function runAnomalyRules(session, rules = []) {
 }
 
 export function universalRules() {
-  return [frozenEnergyRule, zeroPowerRule, suspendedNoChargeRule];
+  return [frozenEnergyRule, zeroPowerRule, suspendedNoChargeRule, incompleteTelemetryRule];
 }
 
 function frozenEnergyRule(session) {
@@ -86,5 +86,17 @@ function suspendedNoChargeRule(session) {
     severity: 'warning',
     message: 'Session stopped while in SuspendedEV — EV never drew current',
     ts: session.stopTs,
+  }];
+}
+
+
+function incompleteTelemetryRule(session) {
+  if (session.status !== 'incomplete') return [];
+
+  return [{
+    type: 'INCOMPLETE_TELEMETRY',
+    severity: 'info',
+    message: 'Session inferred from MeterValues without Start/Stop transaction pair',
+    ts: session.startTs,
   }];
 }

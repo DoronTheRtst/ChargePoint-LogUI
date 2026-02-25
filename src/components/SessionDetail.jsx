@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { ACTION_LABELS, SEV_COLOR, T } from '../tokens';
+import { ACTION_LABELS, SEV_COLOR, SOURCE_COLOR, SOURCE_LABEL, T } from '../tokens';
 import { fmt, fmtDur, fmtTime } from '../utils/format';
-import { Badge, ConnectorBadge, SeverityIcon, SourceBadge } from './Badge';
+import { Badge, ConnectorBadge, SeverityIcon } from './Badge';
 import MeterChart from './MeterChart';
 import { extractReadings } from '../logforge/core/sessionBuilder';
 
-export default function SessionDetail({ session }) {
+export default function SessionDetail({ session, sourceAliases = {} }) {
   const [tab, setTab] = useState('overview');
 
   const allEvents = useMemo(() => {
@@ -41,7 +41,7 @@ export default function SessionDetail({ session }) {
       evs.push({
         ts: e.ts,
         source: 'cp',
-        label: `${e.intent} / ${e.step}`,
+        label: e.step ? `${e.intent} / ${e.step}` : `${e.intent}`,
         detail: e.defects > 0 ? `defects:${e.defects}` : e.vetos > 0 ? `vetos:${e.vetos}` : null,
       });
     }
@@ -147,7 +147,7 @@ export default function SessionDetail({ session }) {
             {allEvents.map((ev, i) => (
               <div key={`${ev.source}_${ev.ts}_${i}`} style={{ display: 'grid', gridTemplateColumns: '90px 60px 1fr auto', gap: 8, padding: '5px 0', borderBottom: `1px solid ${T.border}22`, fontSize: 12, alignItems: 'center' }}>
                 <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmtTime(ev.ts)}</span>
-                <SourceBadge source={ev.source} />
+                <Badge color={SOURCE_COLOR[ev.source]}>{sourceAliases[ev.source] || SOURCE_LABEL[ev.source]}</Badge>
                 <span style={{ color: ev.severity ? SEV_COLOR[ev.severity] : T.text }}>{ev.label}</span>
                 {ev.detail && <span className="mono" style={{ color: T.textDim, fontSize: 11 }}>{ev.detail}</span>}
               </div>

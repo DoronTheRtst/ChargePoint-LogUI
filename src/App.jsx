@@ -10,11 +10,18 @@ import { analyzeLogs, listVendors } from './logforge';
 import { SOURCE_LABEL, T } from './tokens';
 import { fmtDate } from './utils/format';
 
-const ICON_BY_LOGTYPE = { ocpp: '📡', user: '👤', cp: '🔩' };
+const ICON_BY_LOGTYPE = {
+  ocpp: '📡',
+  user: '👤',
+  cp: '🔩',
+  operations: '🧰',
+  guipresenter: '🖥️',
+  powermanagement: '⚡',
+};
 
 export default function App() {
   const vendors = useMemo(() => listVendors(), []);
-  const [vendorId] = useState(vendors[0]?.id || 'abl');
+  const [vendorId, setVendorId] = useState(vendors[0]?.id || 'abl');
   const vendor = useMemo(() => vendors.find((v) => v.id === vendorId) || vendors[0], [vendorId, vendors]);
   const model = vendor?.models?.[0];
 
@@ -23,6 +30,13 @@ export default function App() {
   const [selectedSession, setSelectedSession] = useState(null);
 
   const logTypes = model?.logTypes || [];
+  const sourceAliases = useMemo(() => {
+    if (vendor.id === 'etrel') {
+      return { ocpp: 'Operations', user: 'GuiPresenter', cp: 'PowerManagement' };
+    }
+    return { ocpp: 'OCPP', user: 'USER', cp: 'CP' };
+  }, [vendor.id]);
+
 
   const analysis = useMemo(() => {
     const textByType = Object.fromEntries(Object.entries(filesByType).map(([k, files]) => [k, files.map((f) => f.text)]));
@@ -91,6 +105,29 @@ export default function App() {
           <span style={{ fontSize: 20 }}>⚡</span>
           <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.5px', color: T.amber }}>LogForge</span>
           <Badge color={T.textMuted} style={{ fontSize: 10 }}>{vendor.label} · OCPP 1.6</Badge>
+          <select
+            value={vendorId}
+            onChange={(e) => {
+              setVendorId(e.target.value);
+              setFilesByType({});
+              setSelectedSession(null);
+            }}
+            style={{
+              background: T.bg,
+              color: T.text,
+              border: `1px solid ${T.borderLight}`,
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 12,
+              fontFamily: 'inherit',
+            }}
+          >
+            {vendors.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label} · {v.models?.[0]?.label || 'Model'}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 16, fontSize: 12, alignItems: 'center' }}>
           {isReady && (
@@ -107,7 +144,7 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0, maxHeight: 210, overflow: 'auto' }}>
         <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
           {logTypes.map((logType) => (
             <MultiUploadZone
@@ -128,7 +165,7 @@ export default function App() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, color: T.textMuted }}>
           <span style={{ fontSize: 48 }}>⚡</span>
           <div style={{ fontSize: 16, color: T.textDim }}>Upload log files to begin analysis</div>
-          <div style={{ fontSize: 13 }}>Supports OCPP 1.6 WS logs · ABL USER events · ChargePoint state logs</div>
+          <div style={{ fontSize: 13 }}>Supports vendor-specific OCPP/USER/CP-equivalent logs</div>
           <div style={{ fontSize: 12, color: T.textMuted }}>Multi-file upload supported — drop multiple days at once</div>
         </div>
       ) : (
@@ -150,7 +187,7 @@ export default function App() {
                 </div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   {selectedSession ? (
-                    <SessionDetail key={selectedSession.id} session={selectedSession} />
+                    <SessionDetail key={selectedSession.id} session={selectedSession} sourceAliases={sourceAliases} />
                   ) : (
                     <div style={{ padding: 40, color: T.textMuted, fontSize: 13, textAlign: 'center', marginTop: 60 }}>Select a session to inspect</div>
                   )}
@@ -159,7 +196,7 @@ export default function App() {
             )}
             {tab === 'timeline' && (
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <TimelineView ocppEvents={ocppEvents} userEvents={userEvents} cpEvents={cpEvents} />
+                <TimelineView ocppEvents={ocppEvents} userEvents={userEvents} cpEvents={cpEvents} sourceAliases={sourceAliases} />
               </div>
             )}
             {tab === 'anomalies' && (
