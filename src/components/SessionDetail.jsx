@@ -122,13 +122,15 @@ export default function SessionDetail({ session, sourceAliases = {} }) {
 
       {session.anomalies.length > 0 && (
         <div style={{ padding: '8px 20px', background: `${T.red}08`, borderBottom: `1px solid ${T.red}22`, flexShrink: 0 }}>
-          {session.anomalies.map((a, i) => (
-            <div key={`${a.type}_${a.ts}_${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: i < session.anomalies.length - 1 ? 4 : 0 }}>
-              <SeverityIcon severity={a.severity} />
-              <span style={{ color: SEV_COLOR[a.severity] || T.textDim }}>{a.message}</span>
-              {a.ts && <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmtTime(a.ts)}</span>}
-            </div>
-          ))}
+          <div style={{ maxHeight: 180, overflow: 'auto', paddingRight: 4 }}>
+            {session.anomalies.map((a, i) => (
+              <div key={`${a.type}_${a.ts}_${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: i < session.anomalies.length - 1 ? 4 : 0 }}>
+                <SeverityIcon severity={a.severity} />
+                <span style={{ color: SEV_COLOR[a.severity] || T.textDim }}>{a.message}</span>
+                {a.ts && <span className="mono" style={{ color: T.textMuted, fontSize: 11 }}>{fmtTime(a.ts)}</span>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
